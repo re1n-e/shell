@@ -5,7 +5,6 @@ fn handle_type(type_str: &str, path_env: &str) {
         "echo" => println!("echo is a shell builtin"),
         "exit" => println!("exit is a shell builtin"),
         "type" => println!("type is a shell builtin"),
-        "cat" => println!("cat is /bin/cat"),
         _ => {
             let split = &mut path_env.split(':');
             if let Some(path) =
@@ -13,7 +12,7 @@ fn handle_type(type_str: &str, path_env: &str) {
             {
                 println!("{type_str} is {path}/{type_str}");
             } else {
-                println!("{type_str} not found");
+                println!("{type_str}: not found");
             }
         }
     }
