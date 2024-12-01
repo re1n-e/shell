@@ -1,12 +1,11 @@
 use std::process::exit;
 
 pub fn handle_cmd(command: &str) {
-    match command {
-        "exit 0" => {
-            exit(0);
-        }
-        _ => {
-            println!("{command}: command not found");
-        }
+    if command.starts_with("echo") {
+        println!("{}", &command[5..]);
+    } else if command.starts_with("exit") {
+        exit(0);
+    } else {
+        println!("{}: command not found", command);
     }
 }
