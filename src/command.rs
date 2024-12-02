@@ -1,5 +1,5 @@
 use std::env;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::exit;
 use std::process::Command;
 
@@ -56,11 +56,17 @@ fn print_current_working_directory() {
 }
 
 fn switch_directory(path_e: &str) {
-    let mut path = path_e;
+    let mut path = String::from(path_e); // Convert &str to String for mutability
     if path == "~" {
-        path = "/home/user"
+        if let Ok(home_dir) = env::var("HOME") {
+            path = home_dir; // Replace path with the home directory
+        } else {
+            println!("cd: HOME environment variable not set");
+            return;
+        }
     }
-    if env::set_current_dir(path).is_err() {
+
+    if let Err(_) = env::set_current_dir(&path) {
         println!("cd: {}: No such file or directory", path);
     }
 }
