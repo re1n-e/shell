@@ -8,6 +8,7 @@ fn handle_type(type_str: &str, path_env: &str) {
         "echo" => println!("echo is a shell builtin"),
         "exit" => println!("exit is a shell builtin"),
         "type" => println!("type is a shell builtin"),
+        "pwd" => println!("pwd is a shell builtin"),
         _ => {
             let split = &mut path_env.split(':');
             if let Some(path) =
@@ -49,12 +50,18 @@ fn exe(command: &str) {
     println!("{}: command not found", cmd);
 }
 
+fn print_current_working_directory() {
+    let path = env::current_dir().unwrap();
+    println!("{}", path.display());
+}
+
 pub fn handle_cmd(command: &str, path_env: &str) {
     let trimmed_cmd = command.trim();
     match trimmed_cmd.split_whitespace().next() {
         Some("echo") => println!("{}", trimmed_cmd[5..].trim()),
         Some("exit") => exit(0),
         Some("type") => handle_type(&trimmed_cmd[5..].trim(), path_env),
+        Some("pwd") => print_current_working_directory(),
         Some(_) => exe(trimmed_cmd),
         None => {} // Empty command, do nothing
     }
