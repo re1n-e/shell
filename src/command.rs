@@ -55,10 +55,12 @@ fn print_current_working_directory() {
     println!("{}", path.display());
 }
 
-fn switch_directory(path: &str) {
+fn switch_directory(path_e: &str) {
+    let mut path = path_e;
     if path == "~" {
-        env::set_current_dir("/home/user").unwrap();
-    } else if env::set_current_dir(path).is_err() {
+        path = "/home/user"
+    }
+    if env::set_current_dir(path).is_err() {
         println!("cd: {}: No such file or directory", path);
     }
 }
