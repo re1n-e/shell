@@ -1,4 +1,7 @@
+use std::env;
+use std::path::PathBuf;
 use std::process::exit;
+use std::process::Command;
 
 fn handle_type(type_str: &str, path_env: &str) {
     match type_str {
@@ -18,20 +21,41 @@ fn handle_type(type_str: &str, path_env: &str) {
     }
 }
 
+/// Finds the executable path for the given command name by searching the `PATH` environment variable.
+/// Returns `None` if not found or not executable.
+fn find_exe(name: &str) -> Option<PathBuf> {
+    if let Ok(paths) = env::var("PATH") {
+        for path in env::split_paths(&paths) {
+            let exe_path = path.join(name);
+            if exe_path.is_file() {
+                return Some(exe_path);
+            }
+        }
+    }
+    None
+}
+
+fn exe(command: &str) {
+    let command: Vec<_> = command.split_whitespace().collect();
+    let cmd = command[0];
+    let args = &command[1..];
+    if let Some(path) = find_exe(cmd) {
+        Command::new(path)
+            .args(args)
+            .status()
+            .expect("failed to execute process");
+        return;
+    }
+    println!("{}: command not found", cmd);
+}
+
 pub fn handle_cmd(command: &str, path_env: &str) {
-    if command.starts_with("echo") {
-        if command.len() > 4 {
-            println!("{}", command[5..].trim());
-        } else {
-            println!("");
-        }
-    } else if command.starts_with("exit") {
-        exit(0);
-    } else if command.starts_with("type") {
-        if command.len() > 4 {
-            handle_type(command[5..].trim(), path_env);
-        }
-    } else {
-        println!("{}: command not found", command);
+    let trimmed_cmd = command.trim();
+    match trimmed_cmd.split_whitespace().next() {
+        Some("echo") => println!("{}", trimmed_cmd[5..].trim()),
+        Some("exit") => exit(0),
+        Some("type") => handle_type(&trimmed_cmd[5..].trim(), path_env),
+        Some(_) => exe(trimmed_cmd),
+        None => {} // Empty command, do nothing
     }
 }

@@ -9,20 +9,9 @@ fn main() {
     print!("$ ");
     io::stdout().flush().unwrap();
     while io::stdin().read_line(&mut input).is_ok() {
-        command::handle_cmd(&input.trim(), &path_env);
+        command::handle_cmd(&input, &path_env);
         input.clear();
         print!("$ ");
         io::stdout().flush().unwrap();
     }
-
-    // loop {
-    //     print!("$ ");
-    //     io::stdout().flush().unwrap();
-
-    //     // Wait for user input
-    //     let stdin = io::stdin();
-    //     let mut input = String::new();
-    //     stdin.read_line(&mut input).unwrap();
-    //     command::handle_cmd(&input.trim());
-    // }
 }
