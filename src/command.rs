@@ -55,6 +55,12 @@ fn print_current_working_directory() {
     println!("{}", path.display());
 }
 
+fn switch_directory(path: &str) {
+    if env::set_current_dir(path).is_err() {
+        println!("cd: {}: No such file or directory", path);
+    }
+}
+
 pub fn handle_cmd(command: &str, path_env: &str) {
     let trimmed_cmd = command.trim();
     match trimmed_cmd.split_whitespace().next() {
@@ -62,6 +68,7 @@ pub fn handle_cmd(command: &str, path_env: &str) {
         Some("exit") => exit(0),
         Some("type") => handle_type(&trimmed_cmd[5..].trim(), path_env),
         Some("pwd") => print_current_working_directory(),
+        Some("cd") => switch_directory(&trimmed_cmd[3..].trim()),
         Some(_) => exe(trimmed_cmd),
         None => {} // Empty command, do nothing
     }
