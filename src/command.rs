@@ -69,6 +69,7 @@ pub fn handle_cmd(command: &str, path_env: &str) {
         Some("type") => handle_type(&trimmed_cmd[5..].trim(), path_env),
         Some("pwd") => print_current_working_directory(),
         Some("cd") => switch_directory(&trimmed_cmd[3..].trim()),
+        Some("~") => switch_directory("/home/user"),
         Some(_) => exe(trimmed_cmd),
         None => {} // Empty command, do nothing
     }
