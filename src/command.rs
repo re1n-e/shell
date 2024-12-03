@@ -1,5 +1,6 @@
 use std::env;
-use std::path::{Path, PathBuf};
+use std::fs;
+use std::path::PathBuf;
 use std::process::exit;
 use std::process::Command;
 
@@ -71,14 +72,66 @@ fn switch_directory(path_e: &str) {
     }
 }
 
+fn echo(command: &str) {
+    let mut count = 0;
+    let mut res = String::new();
+    for ch in command.chars() {
+        if ch == '\'' {
+            count += 1;
+        } else {
+            res.push(ch);
+        }
+    }
+    if count & 1 != 1 {
+        println!("{res}");
+    }
+}
+
+fn read_file(file_path: &str) {
+    match fs::read_to_string(file_path) {
+        Ok(contents) => print!("{contents}"),
+        Err(e) => eprintln!("Failed to read file {}: {}", file_path, e),
+    }
+}
+
+fn cat(command: &str) {
+    let command: Vec<_> = command.split_whitespace().collect();
+    let mut file_paths: Vec<String> = Vec::new();
+    let mut path = String::new();
+    let mut inside_quotes = false;
+
+    for arg in command {
+        for ch in arg.chars() {
+            if ch == '\'' {
+                inside_quotes = !inside_quotes;
+                continue;
+            }
+            if inside_quotes || !ch.is_whitespace() {
+                path.push(ch);
+            }
+        }
+
+        if !inside_quotes && !path.is_empty() {
+            file_paths.push(path.clone());
+            path.clear();
+        }
+    }
+
+    for path in file_paths {
+        read_file(&path);
+    }
+    println!();
+}
+
 pub fn handle_cmd(command: &str, path_env: &str) {
     let trimmed_cmd = command.trim();
     match trimmed_cmd.split_whitespace().next() {
-        Some("echo") => println!("{}", trimmed_cmd[5..].trim()),
+        Some("echo") => echo(trimmed_cmd[5..].trim()),
         Some("exit") => exit(0),
         Some("type") => handle_type(&trimmed_cmd[5..].trim(), path_env),
         Some("pwd") => print_current_working_directory(),
         Some("cd") => switch_directory(&trimmed_cmd[3..].trim()),
+        Some("cat") => cat(&trimmed_cmd[4..].trim()),
         Some(_) => exe(trimmed_cmd),
         None => {} // Empty command, do nothing
     }
