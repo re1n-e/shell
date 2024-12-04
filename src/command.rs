@@ -72,19 +72,28 @@ fn switch_directory(path_e: &str) {
     }
 }
 
-fn echo(command: &str) {
-    let mut count = 0;
-    let mut res = String::new();
-    for ch in command.chars() {
+fn echo(input: &str) {
+    let mut res: String = String::new();
+    let mut inside: bool = false;
+    let mut is_whitespace: bool = false;
+    for ch in input.chars() {
         if ch == '\'' {
-            count += 1;
-        } else {
+            inside = !inside;
+        } else if inside {
             res.push(ch);
+        } else {
+            if ch.is_whitespace() && !is_whitespace {
+                is_whitespace = !is_whitespace;
+                res.push(ch);
+            } else if is_whitespace && ch.is_whitespace() {
+                continue;
+            } else {
+                res.push(ch);
+                is_whitespace = false;
+            }
         }
     }
-    if count & 1 != 1 {
-        println!("{res}");
-    }
+    println!("{}", res);
 }
 
 fn read_file(file_path: &str) {
@@ -95,32 +104,46 @@ fn read_file(file_path: &str) {
 }
 
 fn cat(command: &str) {
-    let command: Vec<_> = command.split_whitespace().collect();
     let mut file_paths: Vec<String> = Vec::new();
-    let mut path = String::new();
+    let mut current_path = String::new();
     let mut inside_quotes = false;
 
-    for arg in command {
-        for ch in arg.chars() {
-            if ch == '\'' {
+    // Iterate through each character in the command to handle quotes and spaces
+    for ch in command.chars() {
+        match ch {
+            '\'' => {
+                // Toggle quote state
                 inside_quotes = !inside_quotes;
-                continue;
             }
-            if inside_quotes || !ch.is_whitespace() {
-                path.push(ch);
+            ' ' if !inside_quotes => {
+                // Add the current path when a space is encountered outside quotes
+                if !current_path.is_empty() {
+                    file_paths.push(current_path.clone());
+                    current_path.clear();
+                }
             }
-        }
-
-        if !inside_quotes && !path.is_empty() {
-            file_paths.push(path.clone());
-            path.clear();
+            _ => {
+                // Accumulate characters into the current path
+                current_path.push(ch);
+            }
         }
     }
 
+    // Add the last path if it's not empty
+    if !current_path.is_empty() {
+        file_paths.push(current_path);
+    }
+
+    // Check for empty command
+    if file_paths.is_empty() {
+        eprintln!("cat: missing file operand");
+        return;
+    }
+
+    // Read and print each file
     for path in file_paths {
         read_file(&path);
     }
-    println!();
 }
 
 pub fn handle_cmd(command: &str, path_env: &str) {
