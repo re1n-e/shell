@@ -80,8 +80,10 @@ fn echo(input: &str) {
     for ch in input.chars() {
         if ch == '\"' && !inside_single_quote {
             inside_double_quote = !inside_double_quote;
+            is_whitespace = false;
         } else if ch == '\'' && !inside_double_quote {
             inside_single_quote = !inside_single_quote;
+            is_whitespace = false;
         } else if inside_single_quote || inside_double_quote {
             res.push(ch);
         } else {
