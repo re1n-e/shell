@@ -125,7 +125,7 @@ fn cat(command: &str) {
                     inside_single_quotes = !inside_single_quotes;
                 }
             }
-            ' ' if !inside_single_quotes || !inside_double_quotes => {
+            ' ' if !inside_single_quotes && !inside_double_quotes => {
                 // Add the current path when a space is encountered outside quotes
                 if !current_path.is_empty() {
                     file_paths.push(current_path.clone());
