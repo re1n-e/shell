@@ -123,6 +123,8 @@ fn cat(command: &str) {
                 // Toggle quote state
                 if !inside_double_quotes {
                     inside_single_quotes = !inside_single_quotes;
+                } else {
+                    current_path.push(ch);
                 }
             }
             ' ' if !inside_single_quotes && !inside_double_quotes => {
