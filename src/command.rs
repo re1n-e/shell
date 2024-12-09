@@ -74,12 +74,15 @@ fn switch_directory(path_e: &str) {
 
 fn echo(input: &str) {
     let mut res: String = String::new();
-    let mut inside: bool = false;
+    let mut inside_single_quote: bool = false;
+    let mut inside_double_quote: bool = false;
     let mut is_whitespace: bool = false;
     for ch in input.chars() {
-        if ch == '\'' {
-            inside = !inside;
-        } else if inside {
+        if ch == '\"' && !inside_single_quote {
+            inside_double_quote = !inside_double_quote;
+        } else if ch == '\'' && !inside_double_quote {
+            inside_single_quote = !inside_single_quote;
+        } else if inside_single_quote || inside_double_quote {
             res.push(ch);
         } else {
             if ch.is_whitespace() && !is_whitespace {
@@ -106,16 +109,21 @@ fn read_file(file_path: &str) {
 fn cat(command: &str) {
     let mut file_paths: Vec<String> = Vec::new();
     let mut current_path = String::new();
-    let mut inside_quotes = false;
-
+    let mut inside_single_quotes: bool = false;
+    let mut inside_double_quotes: bool = false;
     // Iterate through each character in the command to handle quotes and spaces
     for ch in command.chars() {
         match ch {
+            '\"' => {
+                inside_double_quotes = !inside_double_quotes;
+            }
             '\'' => {
                 // Toggle quote state
-                inside_quotes = !inside_quotes;
+                if !inside_double_quotes {
+                    inside_single_quotes = !inside_single_quotes;
+                }
             }
-            ' ' if !inside_quotes => {
+            ' ' if !inside_single_quotes || !inside_double_quotes => {
                 // Add the current path when a space is encountered outside quotes
                 if !current_path.is_empty() {
                     file_paths.push(current_path.clone());
